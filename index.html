@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Staff Payment Tracker</title>
+<style>
+  :root {
+    --primary: #ff4e00;
+    --secondary: #8e2de2;
+    --dark: #1f1f1f;
+    --light: #f5f5f5;
+    --glass: rgba(255, 255, 255, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: linear-gradient(to right, var(--dark), #222); color: white; }
+
+  header {
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .menu-icon {
+    font-size: 26px;
+    background: var(--light);
+    color: var(--primary);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  .banner {
+    background: var(--primary);
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+  }
+
+  .sidebar {
+    position: fixed; top: 0; left: -250px; width: 250px; height: 100%;
+    background: #111; padding: 20px; z-index: 1000;
+    transition: 0.3s;
+  }
+
+  .sidebar.active { left: 0; }
+  .sidebar h3 { margin-bottom: 20px; }
+  .sidebar a {
+    display: block; padding: 10px; margin-bottom: 10px;
+    background: var(--glass); color: white; border-radius: 5px; text-decoration: none;
+  }
+  .sidebar a:hover { background: var(--primary); }
+
+  .overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.5); display: none; z-index: 999;
+  }
+  .overlay.active { display: block; }
+
+  main { padding: 20px; max-width: 900px; margin: auto; }
+
+  section {
+    display: none; background: var(--glass); padding: 20px; border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  section.active { display: block; }
+
+  h2 { color: var(--primary); margin-bottom: 15px; }
+
+  input, select, button {
+    width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: none; font-size: 16px;
+  }
+
+  input, select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
+
+  button { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; font-weight: bold; cursor: pointer; }
+  button:hover { opacity: 0.9; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; background: rgba(255,255,255,0.05); }
+  th, td { padding: 10px; border: 1px solid rgba(255,255,255,0.2); text-align: left; }
+  th { background: var(--primary); color: white; }
+  td { color: white; }
+
+  .modal-overlay {
+    position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.6);
+    display: none; align-items:center; justify-content:center; z-index:2000;
+  }
+
+  .modal-box {
+    background: white; padding: 20px; border-radius: 10px; max-width: 90%; width: 300px; text-align:center;
+  }
+  .modal-box p { font-size:16px; margin-bottom: 15px; color:black; }
+  .modal-buttons button { margin:5px; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+  .modal-buttons button:first-child { background:#c62828; color:white; }
+  .modal-buttons button:last-child { background:#ccc; color:black; }
+  .modal-box button.ok-button { background: var(--primary); color:white; padding:8px 16px; }
+
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<header>
+  <div class="menu-icon" onclick="toggleMenu()">≡</div>
+  <h2>📋 Staff Tracker</h2>
+</header>
+
+<div class="banner">🍽 Welcome to Staff Payment Tracker!</div>
+
+<div class="sidebar" id="sidebar">
+  <h3>Menu</h3>
+  <a href="#" onclick="showSection('home')">🏠 Home</a>
+  <a href="#" onclick="showSection('addStaff')">👤 Add Staff</a>
+  <a href="#" onclick="showSection('removeStaff')">🗑️ Remove Staff</a>
+  <a href="#" onclick="showSection('addPayment')">💰 Add Payment</a>
+  <a href="#" onclick="showSection('deductPayment')">➖ Deduct Payment</a>
+  <a href="#" onclick="showSection('transactions')">📜 Transactions</a>
+  <a href="#" onclick="showSection('staffList')">👥 Staff List</a>
+</div>
+
+<main>
+  <section id="home" class="active">
+    <h2>Staff Summary</h2>
+    <table><thead><tr><th>Name</th><th>Salary</th><th>Paid</th><th>Deducted</th><th>Balance</th></tr></thead><tbody id="homeBody"></tbody></table>
+  </section>
+
+  <section id="addStaff">
+    <h2>Add Staff</h2>
+    <input type="text" id="staffName" placeholder="Staff Name">
+    <input type="number" id="salary" placeholder="Monthly Salary">
+    <button onclick="addStaff()">Save Staff</button>
+  </section>
+
+  <section id="removeStaff">
+    <h2>Remove Staff</h2>
+    <select id="removeName"><option value="">Select Staff</option></select>
+    <button onclick="removeStaff()">Remove Staff</button>
+  </section>
+
+  <section id="addPayment">
+    <h2>Add Payment</h2>
+    <select id="payName"><option value="">Select Staff</option></select>
+    <input type="number" id="payAmount" placeholder="Amount Paid">
+    <select id="payPlace">
+      <option value="">Select Place</option>
+      <option value="Office">Office</option>
+      <option value="Branch">Branch</option>
+    </select>
+    <button onclick="addTransaction('add')">Add Payment</button>
+  </section>
+
+  <section id="deductPayment">
+    <h2>Deduct Payment</h2>
+    <select id="deductName"><option value="">Select Staff</option></select>
+    <input type="number" id="deductAmount" placeholder="Amount Deducted">
+    <select id="deductPlace">
+      <option value="">Select Place</option>
+      <option value="Office">Office</option>
+      <option value="Branch">Branch</option>
+    </select>
+    <button onclick="addTransaction('deduct')">Deduct Payment</button>
+  </section>
+
+  <section id="transactions">
+    <h2>Transactions</h2>
+    <input type="text" id="filterName" placeholder="Enter Staff Name to filter" oninput="filterTransactions()">
+    <table><thead><tr><th>Name</th><th>Type</th><th>Amount</th><th>Place</th><th>Date</th></tr></thead><tbody id="transactionBody"></tbody></table>
+  </section>
+
+  <section id="staffList">
+    <h2>Staff List</h2>
+    <ul id="staffListBody" style="list-style:none;padding-left:0;"></ul>
+  </section>
+</main>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <p id="confirmText">Are you sure?</p>
+    <div class="modal-buttons">
+      <button onclick="confirmRemove()">Yes, Delete</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="alertModal">
+  <div class="modal-box">
+    <p id="alertMessage">Alert</p>
+    <button class="ok-button" onclick="closeAlert()">OK</button>
+  </div>
+</div>
+
+<script>
+let staffData = JSON.parse(localStorage.getItem("staffData")||"{}");
+let transactions = JSON.parse(localStorage.getItem("transactions")||"[]");
+let staffToRemove = "";
+
+function toggleMenu() { document.getElementById("sidebar").classList.toggle("active"); document.getElementById("overlay").classList.toggle("active"); }
+function closeMenu() { document.getElementById("sidebar").classList.remove("active"); document.getElementById("overlay").classList.remove("active"); }
+
+function showSection(id) {
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  if(id==='home') renderHome();
+  if(id==='transactions') renderTransactions();
+  if(id==='staffList') renderStaffList();
+  closeMenu();
+}
+
+function saveData() {
+  localStorage.setItem("staffData", JSON.stringify(staffData));
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+}
+
+function updateStaffDropdowns() {
+  const staffNames = Object.keys(staffData);
+  ['payName','deductName','removeName'].forEach(id=>{
+    const select=document.getElementById(id); select.innerHTML='<option value="">Select Staff</option>';
+    staffNames.forEach(name=>{ let option=document.createElement('option'); option.value=name; option.textContent=name; select.appendChild(option); });
+  });
+}
+
+function renderStaffList() {
+  const list=document.getElementById("staffListBody"); list.innerHTML="";
+  const names=Object.keys(staffData);
+  if(names.length===0){ list.innerHTML="<li>No staff available.</li>"; return; }
+  names.forEach(name=>{ const li=document.createElement("li"); li.textContent="👤 "+name; li.style.padding="8px 0"; list.appendChild(li); });
+}
+
+function showAlert(msg){ document.getElementById("alertMessage").innerText=msg; document.getElementById("alertModal").style.display="flex"; }
+function closeAlert(){ document.getElementById("alertModal").style.display="none"; }
+
+function addStaff() {
+  const name=document.getElementById("staffName").value.trim();
+  const salary=parseFloat(document.getElementById("salary").value);
+  if(!name||isNaN(salary)) return showAlert("Enter valid name and salary.");
+  staffData[name]=staffData[name]||{salary:0,paid:0,deducted:0}; staffData[name].salary=salary;
+  saveData();
+  document.getElementById("staffName").value=""; document.getElementById("salary").value="";
+  updateStaffDropdowns(); showAlert("Staff saved!");
+}
+
+function removeStaff() {
+  const name=document.getElementById("removeName").value;
+  if(!name) return showAlert("Please select a staff.");
+  if(!staffData[name]) return showAlert("Staff not found.");
+  staffToRemove=name;
+  document.getElementById("confirmText").innerText=`Are you sure you want to remove "${name}" and all records?`;
+  document.getElementById("confirmModal").style.display="flex";
+}
+
+function confirmRemove() {
+  delete staffData[staffToRemove];
+  transactions=transactions.filter(t=>t.name!==staffToRemove);
+  saveData(); renderHome(); updateStaffDropdowns();
+  staffToRemove=""; closeModal(); showAlert("Staff removed successfully.");
+}
+
+function closeModal(){ document.getElementById("confirmModal").style.display="none"; }
+
+function addTransaction(type) {
+  const name = type==='add'?document.getElementById("payName").value:document.getElementById("deductName").value;
+  const amount = parseFloat(type==='add'?document.getElementById("payAmount").value:document.getElementById("deductAmount").value);
+  const place = type==='add'?document.getElementById("payPlace").value:document.getElementById("deductPlace").value;
+  if(!name||isNaN(amount)||!place||!staffData[name]) return showAlert("Fill all fields correctly.");
+
+  if(type==='add') staffData[name].paid+=amount; else staffData[name].deducted+=amount;
+
+  transactions.unshift({name,type,amount,place,date:new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})});
+  saveData();
+
+  if(type==='add'){ document.getElementById("payName").value=""; document.getElementById("payAmount").value=""; document.getElementById("payPlace").value=""; }
+  else{ document.getElementById("deductName").value=""; document.getElementById("deductAmount").value=""; document.getElementById("deductPlace").value=""; }
+
+  showAlert(type==='add'?"Payment Added!":"Payment Deducted!");
+}
+
+function renderHome() {
+  const tbody=document.getElementById("homeBody"); tbody.innerHTML="";
+  Object.keys(staffData).forEach(name=>{
+    const s=staffData[name]; const balance=s.salary-s.paid+s.deducted;
+    tbody.innerHTML+=`<tr><td>${name}</td><td>₹${s.salary}</td><td>₹${s.paid}</td><td>₹${s.deducted}</td><td>₹${balance}</td></tr>`;
+  });
+}
+
+function renderTransactions(){ filterTransactions(); }
+
+function filterTransactions(){
+  const filterValue=document.getElementById("filterName").value.trim().toLowerCase();
+  const tbody=document.getElementById("transactionBody"); tbody.innerHTML="";
+  transactions.filter(t=>t.name.toLowerCase().includes(filterValue)).forEach(t=>{
+    tbody.innerHTML+=`<tr><td>${t.name}</td><td>${t.type==='add'?'Paid':'Deducted'}</td><td>₹${t.amount}</td><td>${t.place}</td><td>${t.date}</td></tr>`;
+  });
+}
+
+window.onload = () => { renderHome(); updateStaffDropdowns(); };
+</script>
+
+</body>
+</html>
