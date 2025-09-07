@@ -83,7 +83,19 @@
   button { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; font-weight: bold; cursor: pointer; }
   button:hover { opacity: 0.9; }
 
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; background: rgba(255,255,255,0.05); }
+  /* ✅ Responsive table fix */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* prevents squishing on mobile */
+    margin-top: 10px;
+    background: rgba(255,255,255,0.05);
+  }
   th, td { padding: 10px; border: 1px solid rgba(255,255,255,0.2); text-align: left; }
   th { background: var(--primary); color: white; }
   td { color: white; }
@@ -130,7 +142,12 @@
 <main>
   <section id="home" class="active">
     <h2>Staff Summary</h2>
-    <table><thead><tr><th>Name</th><th>Salary</th><th>Paid</th><th>Deducted</th><th>Balance</th></tr></thead><tbody id="homeBody"></tbody></table>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Name</th><th>Salary</th><th>Paid</th><th>Deducted</th><th>Balance</th></tr></thead>
+        <tbody id="homeBody"></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="addStaff">
@@ -140,11 +157,11 @@
     <button onclick="addStaff()">Save Staff</button>
   </section>
   
-<section id="deleteAll">
-  <h2>Delete All Data</h2>
-  <p>This will remove all staff, payments, and balances permanently.</p>
-  <button onclick="deleteAllData()">Delete Everything</button>
-</section>
+  <section id="deleteAll">
+    <h2>Delete All Data</h2>
+    <p>This will remove all staff, payments, and balances permanently.</p>
+    <button onclick="deleteAllData()">Delete Everything</button>
+  </section>
 
   <section id="removeStaff">
     <h2>Remove Staff</h2>
@@ -171,7 +188,12 @@
   <section id="transactions">
     <h2>Transactions</h2>
     <input type="text" id="filterName" placeholder="Enter Staff Name to filter" oninput="filterTransactions()">
-    <table><thead><tr><th>Name</th><th>Type</th><th>Amount</th><th>Place</th><th>Date</th></tr></thead><tbody id="transactionBody"></tbody></table>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Amount</th><th>Place</th><th>Date</th></tr></thead>
+        <tbody id="transactionBody"></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="deleteTransactions">
@@ -218,12 +240,12 @@ function showSection(id) {
   if(id==='staffList') renderStaffList();
   closeMenu();
 }
-  function deleteAllData() {
+
+function deleteAllData() {
   if(Object.keys(staffData).length === 0 && transactions.length === 0){
     showAlert("No data to delete.");
     return;
   }
-
   if(confirm("Are you sure you want to DELETE ALL DATA? This cannot be undone!")){
     staffData = {};
     transactions = [];
@@ -235,7 +257,6 @@ function showSection(id) {
     showAlert("All data has been deleted!");
   }
 }
-
 
 function saveData() {
   localStorage.setItem("staffData", JSON.stringify(staffData));
@@ -337,4 +358,3 @@ window.onload = () => { renderHome(); updateStaffDropdowns(); };
 
 </body>
 </html>
-
