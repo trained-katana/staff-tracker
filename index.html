@@ -17,15 +17,23 @@
   body { font-family: sans-serif; background: linear-gradient(to right, var(--dark), #222); color: white; }
 
   header {
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* menu stays left */
+  padding: 15px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header h2 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+}
+
 
   .menu-icon {
     font-size: 26px;
@@ -92,7 +100,7 @@
   .table-container table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px; /* prevents squishing on mobile */
+    min-width: 600px;
     margin-top: 10px;
     background: rgba(255,255,255,0.05);
   }
@@ -131,8 +139,8 @@
   <a href="#" onclick="showSection('home')">🏠 Home</a>
   <a href="#" onclick="showSection('addStaff')">👤 Add Staff</a>
   <a href="#" onclick="showSection('removeStaff')">🗑️ Remove Staff</a>
-  <a href="#" onclick="showSection('addPayment')">💰 Add Payment</a>
-  <a href="#" onclick="showSection('deductPayment')">➖ Deduct Payment</a>
+  <a href="#" onclick="showSection('givePayment')">💰 Give Payment</a>
+  <a href="#" onclick="showSection('addPayment')">➕ Add Payment</a>
   <a href="#" onclick="showSection('transactions')">📜 Transactions</a>
   <a href="#" onclick="showSection('deleteTransactions')">❌ Delete All Transactions</a>
   <a href="#" onclick="showSection('staffList')">👥 Staff List</a>
@@ -169,20 +177,22 @@
     <button onclick="removeStaff()">Remove Staff</button>
   </section>
 
-  <section id="addPayment">
-    <h2>Add Payment</h2>
+  <!-- ✅ Renamed Add Payment → Give Payment -->
+  <section id="givePayment">
+    <h2>Give Payment</h2>
     <select id="payName"><option value="">Select Staff</option></select>
-    <input type="number" id="payAmount" placeholder="Amount Paid">
+    <input type="number" id="payAmount" placeholder="Amount Given">
     <input type="text" id="payPlace" placeholder="Enter Place">
-    <button onclick="addTransaction('add')">Add Payment</button>
+    <button onclick="addTransaction('add')">Give Payment</button>
   </section>
 
-  <section id="deductPayment">
-    <h2>Deduct Payment</h2>
+  <!-- ✅ Renamed Deduct Payment → Add Payment -->
+  <section id="addPayment">
+    <h2>Add Payment</h2>
     <select id="deductName"><option value="">Select Staff</option></select>
-    <input type="number" id="deductAmount" placeholder="Amount Deducted">
+    <input type="number" id="deductAmount" placeholder="Amount Added">
     <input type="text" id="deductPlace" placeholder="Enter Place">
-    <button onclick="addTransaction('deduct')">Deduct Payment</button>
+    <button onclick="addTransaction('deduct')">Add Payment</button>
   </section>
 
   <section id="transactions">
@@ -325,7 +335,7 @@ function addTransaction(type) {
   if(type==='add'){ document.getElementById("payName").value=""; document.getElementById("payAmount").value=""; document.getElementById("payPlace").value=""; }
   else{ document.getElementById("deductName").value=""; document.getElementById("deductAmount").value=""; document.getElementById("deductPlace").value=""; }
 
-  showAlert(type==='add'?"Payment Added!":"Payment Deducted!");
+  showAlert(type==='add'?"Payment Given!":"Payment Added!");
 }
 
 function renderHome() {
@@ -342,7 +352,7 @@ function filterTransactions(){
   const filterValue=document.getElementById("filterName").value.trim().toLowerCase();
   const tbody=document.getElementById("transactionBody"); tbody.innerHTML="";
   transactions.filter(t=>t.name.toLowerCase().includes(filterValue)).forEach(t=>{
-    tbody.innerHTML+=`<tr><td>${t.name}</td><td>${t.type==='add'?'Paid':'Deducted'}</td><td>₹${t.amount}</td><td>${t.place}</td><td>${t.date}</td></tr>`;
+    tbody.innerHTML+=`<tr><td>${t.name}</td><td>${t.type==='add'?'Given':'Added'}</td><td>₹${t.amount}</td><td>${t.place}</td><td>${t.date}</td></tr>`;
   });
 }
 
