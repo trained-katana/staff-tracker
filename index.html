@@ -124,6 +124,7 @@
   <a href="#" onclick="showSection('transactions')">📜 Transactions</a>
   <a href="#" onclick="showSection('deleteTransactions')">❌ Delete All Transactions</a>
   <a href="#" onclick="showSection('staffList')">👥 Staff List</a>
+  <a href="#" onclick="showSection('deleteAll')">❌ Delete All Data</a>
 </div>
 
 <main>
@@ -138,6 +139,12 @@
     <input type="number" id="salary" placeholder="Monthly Salary">
     <button onclick="addStaff()">Save Staff</button>
   </section>
+  
+<section id="deleteAll">
+  <h2>Delete All Data</h2>
+  <p>This will remove all staff, payments, and balances permanently.</p>
+  <button onclick="deleteAllData()">Delete Everything</button>
+</section>
 
   <section id="removeStaff">
     <h2>Remove Staff</h2>
@@ -211,6 +218,24 @@ function showSection(id) {
   if(id==='staffList') renderStaffList();
   closeMenu();
 }
+  function deleteAllData() {
+  if(Object.keys(staffData).length === 0 && transactions.length === 0){
+    showAlert("No data to delete.");
+    return;
+  }
+
+  if(confirm("Are you sure you want to DELETE ALL DATA? This cannot be undone!")){
+    staffData = {};
+    transactions = [];
+    saveData();
+    renderHome();
+    renderStaffList();
+    updateStaffDropdowns();
+    renderTransactions();
+    showAlert("All data has been deleted!");
+  }
+}
+
 
 function saveData() {
   localStorage.setItem("staffData", JSON.stringify(staffData));
@@ -312,3 +337,4 @@ window.onload = () => { renderHome(); updateStaffDropdowns(); };
 
 </body>
 </html>
+
